@@ -126,7 +126,12 @@ class PetSafeFeederSwitchEntity(PetSafeSwitchEntity):
         elif self._device_type == "slow_feed":
             self._attr_is_on = feeder.is_slow_feed
 
-        self.schedule_update_ha_state(True)
+        # Was schedule_update_ha_state(True). force_refresh=True runs async_update(),
+        # which for switches only calls CoordinatorEntity.async_update() ->
+        # coordinator.async_request_refresh(), re-entering this handler. Switch values are
+        # read from coordinator data above, so writing state directly is sufficient and
+        # avoids driving a refresh loop.
+        self.async_write_ha_state()
         return super()._handle_coordinator_update()
 
     async def async_update(self) -> None:

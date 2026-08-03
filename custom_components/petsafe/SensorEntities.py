@@ -126,7 +126,14 @@ class PetSafeLitterboxSensorEntity(PetSafeSensorEntity):
             )
             events = await litterbox.get_activity()
             self._attr_native_value = self._get_rake_status(events["data"], litterbox)
-        return await super().async_update()
+        # Do not call CoordinatorEntity.async_update() here. It calls
+        # coordinator.async_request_refresh(), and because _handle_coordinator_update()
+        # force-runs this method via schedule_update_ha_state(True), that closes a loop:
+        # refresh -> handler -> async_update -> request_refresh -> refresh. The only thing
+        # limiting it is REQUEST_REFRESH_DEFAULT_COOLDOWN (10s), so the integration polled
+        # the PetSafe API every ~10s no matter what update_interval was set to.
+        # The coordinator's own update_interval is the correct driver.
+        return
 
     def _get_last_cleaning_time(self, events):
         for item in reversed(events):
@@ -240,7 +247,14 @@ class PetSafeFeederSensorEntity(PetSafeSensorEntity):
             if self._attr_native_value is None or dt_util.now() > self._attr_native_value:
                 schedules = await feeder.get_schedules()
                 self._attr_native_value = self._get_next_feeding_time(schedules)
-        return await super().async_update()
+        # Do not call CoordinatorEntity.async_update() here. It calls
+        # coordinator.async_request_refresh(), and because _handle_coordinator_update()
+        # force-runs this method via schedule_update_ha_state(True), that closes a loop:
+        # refresh -> handler -> async_update -> request_refresh -> refresh. The only thing
+        # limiting it is REQUEST_REFRESH_DEFAULT_COOLDOWN (10s), so the integration polled
+        # the PetSafe API every ~10s no matter what update_interval was set to.
+        # The coordinator's own update_interval is the correct driver.
+        return
     
     def _get_next_feeding_time(self, schedules):
         now = dt_util.now()

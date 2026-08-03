@@ -1,9 +1,15 @@
+from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
 from . import ButtonEntities, PetSafeCoordinator
 from .const import DOMAIN
+
+# PetSafe's own library README warns the account can be locked if data is requested more
+# often than once per 5 minutes, and every poll of a should_poll CoordinatorEntity ends in
+# coordinator.async_request_refresh(). Keep this aligned with update_interval.
+SCAN_INTERVAL = timedelta(minutes=5)
 
 
 async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry, add_entities):

@@ -229,7 +229,9 @@ class PetSafeCoordinator(DataUpdateCoordinator):
             # Name of the data. For logging purposes.
             name="PetSafe",
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=30),
+            # PetSafe's library README: "PetSafe will lock your account if you request
+            # data more often than once per 5 minutes."
+            update_interval=timedelta(minutes=5),
         )
         self.api: petsafe.PetSafeClient = api
         self.hass: HomeAssistant = hass
